@@ -6,26 +6,26 @@ import { BsCheck } from "react-icons/bs";
 import { Toaster, toaster } from "@/components/ui/toaster";
 
 export default function FileUploadForm() {
-  const [files, setFiles] = useState<File[]>([]);
+  const [documents, setDocuments] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files));
+      setDocuments(Array.from(e.target.files));
     }
   };
 
   const handleUpload = async () => {
-    if (!files.length) return;
+    if (!documents.length) return;
 
     const formData = new FormData();
-    formData.append("file", files[0]);
+    formData.append("file", documents[0]);
 
     setIsUploading(true);
 
     const toastId = toaster.create({
       title: "Uploading...",
-      description: `Uploading ${files[0].name}`,
+      description: `Uploading ${documents[0].name}`,
       type: "loading",
       duration: 4000,
     });
@@ -48,7 +48,7 @@ export default function FileUploadForm() {
         duration: 4000,
       });
 
-      setFiles([]);
+      setDocuments([]);
     } catch (err: any) {
       toaster.dismiss(toastId); // remove loading toast
 
@@ -77,9 +77,9 @@ export default function FileUploadForm() {
         </Button>
       </label>
 
-      {files.length > 0 && (
+      {documents.length > 0 && (
         <Text fontSize="sm" color="gray.500">
-          {files[0].name}
+          {documents[0].name}
         </Text>
       )}
 
@@ -87,7 +87,7 @@ export default function FileUploadForm() {
         size="xs"
         colorScheme="blue"
         onClick={handleUpload}
-        isDisabled={files.length === 0 || isUploading}
+        isDisabled={documents.length === 0 || isUploading}
         isLoading={isUploading}
         leftIcon={<BsCheck />}
       >

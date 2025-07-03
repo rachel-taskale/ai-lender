@@ -1,49 +1,62 @@
-export const createAccountTable = `CREATE TABLE accounts (
-    id SERIAL PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
+export const createAccountTable = `
+  CREATE TABLE accounts (
+    email TEXT PRIMARY KEY,
     name TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  );`;
-
-export const createFilesTable = `
-  CREATE TABLE IF NOT EXISTS files (
-    id SERIAL PRIMARY KEY,
-    account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE,
-    filename TEXT NOT NULL,
-    content TEXT,  -- or BYTEA if storing binary data
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 `;
 
-// Insert a new account
-export const createAccount = `
-  INSERT INTO accounts (email, name)
-  VALUES ($1, $2)
-  RETURNING *;
+export const createDocumentsTable = `
+  CREATE TABLE user_documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id TEXT REFERENCES accounts(email) ON DELETE CASCADE,
+    file_name TEXT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT now(),
+    extracted_text TEXT,
+    transactions JSONB,
+    claude_analysis JSONB
+  );
 `;
 
-// Get a single account by ID
-export const getAccount = `
-  SELECT * FROM accounts
-  WHERE id = $1;
+export const createCumulativeSummary = `
+  CREATE TABLE user_cumulative_summary (
+    user_id TEXT PRIMARY KEY REFERENCES accounts(email) ON DELETE CASCADE,
+    total_income NUMERIC,
+    total_spending NUMERIC,
+    suspicious_flags TEXT[],
+    approved_for_loan BOOLEAN,
+    risk_score NUMERIC,
+    last_updated TIMESTAMP DEFAULT now(),
+    summary TEXT
+  );
 `;
 
-// Insert a file for an account
-export const uploadFile = `
-  INSERT INTO files (account_id, filename, content)
-  VALUES ($1, $2, $3)
-  RETURNING *;
-`;
+// //  id SERIAL PRIMARY KEY,
+// // email TEXT NOT NULL UNIQUE,
+// // name TEXT,
+// // created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+// // Insert a new account
+// export const createAccount = `
+//   INSERT INTO accounts (email, name, created_at)
+//   VALUES ($1, $2)
+//   RETURNING *;
+// `;
 
-// Get a single file by file ID
-export const getFile = `
-  SELECT * FROM files
-  WHERE id = $1;
-`;
+// // Get a single account by ID
+// export const getAccount = `
+//   SELECT * FROM accounts
+//   WHERE id = $1;
+// `;
 
-// Get all files for a given account
-export const getFiles = `
-  SELECT * FROM files
-  WHERE account_id = $1
-  ORDER BY uploaded_at DESC;
-`;
+// // Insert a document for an account
+// export const uploadDocument = `
+//   INSERT INTO documents (account_id, filename, content)
+//   VALUES ($1, $2, $3)
+//   RETURNING *;
+// `;
+
+// // Get a single document by document ID
+// export const getDocument = `
+//   SELECT * FROM documents
+//   WHERE id = $1;
+// `;

@@ -20,6 +20,7 @@ export async function extractStructuredTransactions(pdfPath: string) {
   const prompt = buildPrompt(rawText);
   const result = await claude.call([new HumanMessage(prompt)]);
   console.log(result.content); // structured JSON
+  return result.content;
 }
 
 extractStructuredTransactions("./bankstatement1.pdf");

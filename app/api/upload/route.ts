@@ -1,21 +1,33 @@
 import { extractStructuredTransactions } from "@/app/common/claude";
-import { extractTextFromPDF } from "@/app/common/extractText";
+import {
+  extractStructuredFromPDF,
+  extractTextStringsFromPdf2Json,
+} from "@/app/common/extractText";
 import { NextRequest, NextResponse } from "next/server";
 
 // POST - save document related to a specific person to user_documents
 export async function POST(req: NextRequest, res: NextResponse) {
   try {
-    console.log("here");
-    // extract the data from the document
-    const { fileBuffer } = req.body;
-    console.log("fileBuffer: ", fileBuffer);
+    const form = await req.formData();
+    const files = form.getAll("files") as File[];
+    const email = form.get("email") as string;
 
-    const rawText = await extractTextFromPDF(fileBuffer);
-    console.log("rawText: ", rawText);
-
-    const structuredJSON = await extractStructuredTransactions(rawText);
-    console.log("structuredJSON: ", structuredJSON);
-    return new Response(JSON.stringify({ data: structuredJSON }), {
+    let rawText: Record<string, string[]> = {};
+    // Loop thru all the files and add the documents to our DB and
+    for (const file of files) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const pdfData = await extractStructuredFromPDF(buffer);
+      if (pdfData) {
+        const text = extractTextStringsFromPdf2Json(pdfData).flat();
+        rawText[file.name] = text;
+      }
+    }
+    // Peform analysis on each of the documents while retaining knowledge of each document
+    for (const file in rawText.keys) {
+      const structuredJSON = await extractStructuredTransactions(rawText[file]);
+    }
+    // console.log("structuredJSON: ", structuredJSON);
+    return new Response(JSON.stringify({ data: rawText }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

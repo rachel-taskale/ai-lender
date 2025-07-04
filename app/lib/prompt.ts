@@ -1,17 +1,40 @@
 export function buildPrompt(text: string): string {
   return `
-  You are a financial assistant. Extract all transactions from this bank statement in JSON format:
-  
-  Each transaction must have:
-  - transaction_date (YYYY-MM-DD)
-  - value_date (YYYY-MM-DD)
-  - description
-  - debit (if present)
-  - credit (if present)
-  - balance (if present)
-  
-  Here is the statement:
-  ${text}
+  You are a financial assistant reviewing a user's bank statement. Your job is to extract structured financial data and provide a concise analysis of the account activity.
+
+  Return a valid JSON object with the following structure:
+
+  {
+    "transactions": [
+      {
+        "transaction_date": "YYYY-MM-DD",
+        "value_date": "YYYY-MM-DD",
+        "description": "string",
+        "debit": number (optional),
+        "credit": number (optional),
+        "balance": number (optional)
+      },
+        ...
+    ],
+  "claude_analysis": {
+    "total_income": number,
+    "total_spending": number,
+    "suspicious_flags": [string],
+    "approved_for_loan": boolean,
+    "risk_score": number, // between 0 (low risk) and 1 (high risk)
+    "summary": "A short explanation of your reasoning (1–3 sentences)"
+  }
+}
+
+  Guidelines:
+  - Include all transactions found in the statement.
+  - In claude_analysis, base your decision only on the current statement.
+  - If data is insufficient to approve the loan, set approved_for_loan to false and explain why in the summary.
+
+  Only return the JSON object.
+
+  Here is the bank statement text:
+    ${text}
   `;
 }
 
@@ -39,5 +62,6 @@ Guidelines:
 - In "summary", explain your reasoning clearly.
 
 ONLY return JSON. Do not include other commentary or prose outside the object.
+
 `;
 }

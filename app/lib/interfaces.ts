@@ -23,3 +23,30 @@ export interface ExtractedTransactions {
   balance?: number;
   category: ExpenditureCategory;
 }
+
+export interface Users {
+  email: string;
+  name: string;
+  created_at: Date;
+}
+
+export interface ClaudeAnalysis {
+  userId: string;
+  totalIncome: number;
+  totalSpending: number;
+  suspiciousFlags: string[];
+  approvedForLoan: boolean;
+  riskScore: number;
+  lastUpdated: Date;
+  summary: string;
+}
+
+export interface UserDocuments {
+  id: string;
+  userId: string;
+  filename: string;
+  uploadedAt: Date;
+  extractedText: string;
+  transactions: ExtractedTransactions[];
+  claudeAnalysis: ClaudeAnalysis;
+}

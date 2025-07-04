@@ -1,9 +1,8 @@
+// Home.tsx
 "use client";
 
-import { Box, Button, FileUpload } from "@chakra-ui/react";
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { HiUpload } from "react-icons/hi";
+import { Box, Text, Heading } from "@chakra-ui/react";
+import { useState } from "react";
 import FileUploader from "./FileUploader";
 import { AddBorrower } from "./AddBorrower";
 
@@ -11,16 +10,16 @@ export const Home = () => {
   const [results, setResults] = useState();
 
   return (
-    <div>
-      <Box justifyItems="center" pt="20px">
-        <div style={{ marginBottom: "10px", fontWeight: "bold" }}>
-          Upload Borrower's Documents
-        </div>
-        <FileUploader />
-        <Box position="absolute" bottom={5} right={5}>
-          <AddBorrower />
-        </Box>
+    <Box p={8}>
+      <Heading size="md" mb={4}>
+        Upload Borrower’s Documents
+      </Heading>
+
+      <FileUploader />
+
+      <Box position="fixed" bottom={6} right={6}>
+        <AddBorrower />
       </Box>
-    </div>
+    </Box>
   );
 };

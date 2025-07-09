@@ -30,15 +30,16 @@ export interface Users {
   created_at: Date;
 }
 
-export interface ClaudeAnalysis {
+export interface UserRiskProfile {
   userId: string;
   totalIncome: number;
   totalSpending: number;
+  riskScore: number;
   suspiciousFlags: string[];
   approvedForLoan: boolean;
-  riskScore: number;
-  lastUpdated: Date;
   summary: string;
+  lastUpdated: Date;
+  documentCount: number;
 }
 
 export interface UserDocuments {
@@ -47,6 +48,9 @@ export interface UserDocuments {
   filename: string;
   uploadedAt: Date;
   extractedText: string;
+  totalIncome: number;
+  totalSpending: number;
   transactions: ExtractedTransactions[];
-  claudeAnalysis: ClaudeAnalysis;
+  suspiciousFlags: string[];
+  summary: string;
 }

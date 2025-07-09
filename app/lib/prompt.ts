@@ -1,41 +1,82 @@
-export function buildPrompt(text: string): string {
+export function buildDocumentAnalysisPrompt(fileName: string, text: string[]) {
   return `
-  You are a financial assistant reviewing a user's bank statement. Your job is to extract structured financial data and provide a concise analysis of the account activity.
+You are a certified CPA and expert financial analyst. Your job is to assess the financial health of a small business using a single bank statement: "${fileName}".
 
-  Return a valid JSON object with the following structure:
+### Your tasks:
+1. **Extract all transactions** from the statement in the following format:
 
-  {
-    "transactions": [
-      {
-        "transaction_date": "YYYY-MM-DD",
-        "value_date": "YYYY-MM-DD",
-        "description": "string",
-        "debit": number (optional),
-        "credit": number (optional),
-        "balance": number (optional)
-      },
-        ...
-    ],
-  "claude_analysis": {
+\`\`\`json
+{
+  "transaction_date": "YYYY-MM-DD",
+  "value_date": "YYYY-MM-DD",
+  "description": "string",
+  "debit"?: number,
+  "credit"?: number,
+  "balance"?: number,
+  "category": "ExpenditureCategory"
+}
+\`\`\`
+
+The **category** must be one of the following:
+
+\`\`\`ts
+enum ExpenditureCategory {
+  HousingAndRent = "Housing & Rent",
+  Utilities = "Utilities",
+  FoodAndGroceries = "Food & Groceries",
+  Healthcare = "Healthcare",
+  Transportation = "Transportation",
+  Entertainment = "Entertainment",
+  DebtRepayment = "Debt Repayment",
+  CashWithdrawals = "Cash Withdrawals",
+  ShoppingAndDiscretionary = "Shopping & Discretionary",
+  BusinessExpenses = "Business Expenses",
+  Insurance = "Insurance",
+  Education = "Education",
+  GovernmentAndTaxes = "Government & Taxes",
+  Miscellaneous = "Miscellaneous"
+}
+\`\`\`
+
+2. **Calculate totals**:
+   - \`total_income\`: sum of all credits
+   - \`total_expense\`: sum of all debits
+
+3. **Identify suspicious activity**, such as:
+   - unusually large transactions
+   - frequent cash withdrawals
+   - inconsistent or missing income
+   - overdraft behavior or negative balances
+
+4. **Summarize** the business’s financial health for this document only.
+
+---
+
+### 🔁 Output Format (JSON only):
+\`\`\`json
+{
+  "transactions": [...],
+  "analysis": {
     "total_income": number,
-    "total_spending": number,
-    "suspicious_flags": [string],
-    "approved_for_loan": boolean,
-    "risk_score": number, // between 0 (low risk) and 1 (high risk)
-    "summary": "A short explanation of your reasoning (1–3 sentences)"
+    "total_expense": number,
+    "suspicious_flags": string[],
+    "summary": "string"
   }
 }
+\`\`\`
 
-  Guidelines:
-  - Include all transactions found in the statement.
-  - In claude_analysis, base your decision only on the current statement.
-  - If data is insufficient to approve the loan, set approved_for_loan to false and explain why in the summary.
+⚠️ **Guidelines**:
+- Base your analysis **only** on the contents of this bank statement.
+- Do **not** refer to past documents or make assumptions.
+- Return only the JSON object. Do not include explanation or extra text.
 
-  Only return the JSON object.
+---
 
-  Here is the bank statement text:
-    ${text}
-  `;
+### 🧾 Bank statement content:
+\`\`\`
+${text}
+\`\`\`
+`;
 }
 
 export function financialAssessmentPrompt(text: string): string {

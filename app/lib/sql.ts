@@ -1,26 +1,27 @@
-export const createAccountTable = `
-  CREATE TABLE accounts (
+export const createUsersTable = `
+  CREATE TABLE users (
     email TEXT PRIMARY KEY,
     name TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 `;
-
-export const createDocumentsTable = `
+export const createUserDocumentsTable = `
   CREATE TABLE user_documents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id TEXT REFERENCES accounts(email) ON DELETE CASCADE,
-    file_name TEXT NOT NULL,
-    uploaded_at TIMESTAMP DEFAULT now(),
-    extracted_text TEXT,
-    transactions JSONB,
-    claude_analysis JSONB
-  );
+  uuid TEXT PRIMARY KEY,
+  user_id TEXT  REFERENCES users(email) ON DELETE CASCADE,
+  filename TEXT NOT NULL,
+  uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  extracted_text TEXT,
+  total_income NUMERIC(12, 2),
+  total_spending NUMERIC(12, 2),
+  transactions JSONB,          -- stores array of ExtractedTransactions
+  suspicious_flags TEXT[],     -- stores string array
+  summary TEXT
+);
 `;
-
-export const createCumulativeSummary = `
+export const createUserCumulativeSummaryTable = `
   CREATE TABLE user_cumulative_summary (
-    user_id TEXT PRIMARY KEY REFERENCES accounts(email) ON DELETE CASCADE,
+    user_id TEXT PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
     total_income NUMERIC,
     total_spending NUMERIC,
     suspicious_flags TEXT[],
@@ -31,32 +32,67 @@ export const createCumulativeSummary = `
   );
 `;
 
-// //  id SERIAL PRIMARY KEY,
-// // email TEXT NOT NULL UNIQUE,
-// // name TEXT,
-// // created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-// // Insert a new account
-// export const createAccount = `
-//   INSERT INTO accounts (email, name, created_at)
-//   VALUES ($1, $2)
-//   RETURNING *;
-// `;
+export const insertUserDocument = `INSERT INTO user_documents (
+uuid,
+  user_id,
+  filename,
+  uploaded_at,
+  extracted_text,
+  total_income,
+  total_spending,
+  transactions,
+  suspicious_flags,
+  summary
+) VALUES (
+ $1, -- uuid
+  $2,  -- user_id (email)
+  $3,  -- filename
+  $4,  -- uploaded_at (new Date())
+  $5,  -- extracted_text (full text)
+  $6,  -- total_income
+  $7,  -- total_spending
+  $8,  -- transactions (as JSON object)
+  $9,  -- suspicious_flags (as string[])
+  $10   -- summary
+);`;
 
-// // Get a single account by ID
-// export const getAccount = `
-//   SELECT * FROM accounts
-//   WHERE id = $1;
-// `;
+export const insertUser = `
+  INSERT INTO users (
+    email,
+    name,
+    created_at
+  ) VALUES (
+    $1,
+    $2,
+    $3
+  )
+  ON CONFLICT (email) DO NOTHING;
+`;
 
-// // Insert a document for an account
-// export const uploadDocument = `
-//   INSERT INTO documents (account_id, filename, content)
-//   VALUES ($1, $2, $3)
-//   RETURNING *;
-// `;
+export const getUser = `
+  SELECT * FROM users WHERE email = $1;
+`;
+export const getUsers = `
+  SELECT * FROM users;
+`;
+// Get a single document by document ID
+export const getDocuments = `
+  SELECT * FROM user_documents
+  WHERE user_id = $1;
+`;
 
-// // Get a single document by document ID
-// export const getDocument = `
-//   SELECT * FROM documents
-//   WHERE id = $1;
-// `;
+export const getAllDocuments = `
+  SELECT * FROM user_documents;
+`;
+export const dbTableInfo = `
+SELECT EXISTS (
+  SELECT 1
+  FROM information_schema.tables
+  WHERE table_schema = 'public'
+    AND table_name = $1
+);`;
+
+export const getAllDocumentAnalyses = `
+  SELECT document_analysis::json
+  FROM user_documents
+  WHERE user_id = $1;`;
